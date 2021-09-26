@@ -187,6 +187,7 @@ public:
 };
 
 //#define BASE_CHECK
+//#define ITERATORS_CHECK
 
 void main()
 {
@@ -204,7 +205,8 @@ void main()
 	list.reverse_print();
 #endif // BASE_CHECK
 
-	List list = {3,5,8,13,21};
+#ifdef ITERATORS_CHECK
+	List list = { 3,5,8,13,21 };
 	list = list;
 	list.print();
 	//List list2 = list;  //CopyConstructor
@@ -217,5 +219,30 @@ void main()
 	}
 	cout << endl;
 	list2.reverse_print();
+#endif // ITERATORS_CHECK
+	typedef int DataType;
+	DataType arr[] = { 0,1,1,2,3,5,8,13,21};
+	for (int i = 0; i < sizeof(arr) / sizeof(DataType); i++)
+	{
+		cout << arr[i] << endl;
+	}cout << endl;
+	for (int i : arr)		//Ranch-based for intended to work only with containers
+	{
+		cout << i << "\t";
+	}cout << endl;
+
+	/*
+	for(type i : container)
+	{
+		//i - iterator;
+		cout << i;
+	}
+	*/
+
+	List list = { 0,1,1,2,3,5,8,13,21 };
+	for (int i : list)
+	{
+		cout << i << "\t";
+	}cout << endl;
 
 }
