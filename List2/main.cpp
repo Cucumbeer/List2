@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <vector>
 using namespace std;
 
 class List
@@ -19,8 +20,7 @@ class List
 		}
 		friend class List;
 	}*Head, * Tail;
-	/*Element* Head;
-	Element* Tail;*/
+	
 	size_t size;
 public:
 	class Iterator
@@ -47,6 +47,17 @@ public:
 			Temp = Temp->pNext;
 			return old;
 		}
+		Iterator& operator--()
+		{
+			Temp = Temp -> pPrev;
+			return *this;
+		}
+		Iterator operator--(int)
+		{
+			Iterator old = *this;
+			Temp = Temp->pPrev;
+			return old;
+		}
 		bool operator==(const Iterator& other)const
 		{
 			return this->Temp == other.Temp;
@@ -61,9 +72,62 @@ public:
 		}
 		int& operator*()
 		{
-			return this->Temp->Data;
+			return Temp->Data;
 		}
 	};
+	class ReverseIterator
+	{
+		Element* Temp;
+	public:
+		ReverseIterator(Element* Temp = nullptr) :Temp(Temp)
+		{
+			cout << "RIT_Constructor:\t" << this << endl;
+		}
+		~ReverseIterator()
+		{
+			cout << "RIT_Destructor" << this << endl;
+		}
+		ReverseIterator& operator++()
+		{
+			Temp = Temp->pPrev;
+			return *this;
+		}
+		ReverseIterator operator++(int)
+		{
+			ReverseIterator old = *this;
+			Temp = Temp->pPrev;
+			return old;
+		}
+		ReverseIterator& operator--()
+		{
+			Temp = Temp->pNext;
+			return *this;
+		}
+		ReverseIterator operator--(int)
+		{
+			ReverseIterator old = *this;
+			Temp = Temp->pNext;
+			return old; 
+		}
+		bool operator==(const ReverseIterator& other)const
+		{
+			return this->Temp == other.Temp;
+		}
+		bool operator!=(const ReverseIterator& other)const
+		{
+			return this->Temp != other.Temp;
+		}
+		const int& operator*()const
+		{
+			return Temp->Data;
+		}
+		int& operator*()
+		{
+			return Temp->Data;
+		}
+	};
+	
+	
 	Iterator begin()
 	{
 		return Head;
@@ -72,10 +136,21 @@ public:
 	{
 		return nullptr;
 	}
+	
+	ReverseIterator rbegin()
+	{
+		return Tail;
+	}
+	ReverseIterator rend()
+	{
+		return nullptr;
+	}
+
 	size_t get_size()const
 	{
 		return this->size;
 	}
+
 	List()
 	{
 		//Конструктор по умолчанию - создает пустой список. 
@@ -140,6 +215,33 @@ public:
 		Tail = Tail->pNext = new Element(Data, nullptr, Tail); 
 		size++;
 	}
+	void insert(unsigned int Index, int Data)
+	{
+		if (Index > size) return;
+		if (Index == 0)
+		{
+			push_front(Data);
+			return;
+		}
+		if (Index == size)
+		{
+			push_back(Data);
+			return;
+		}
+		Element* Temp;
+		if (Index < size / 2)
+		{
+			Temp = Head;
+			for (size_t i = 0; i < Index; i++)Temp = Temp->pNext;
+		}
+		else
+		{
+			Temp = Tail;
+			for (size_t i = 0; i < size - Index - 1; i++)Temp = Temp->pPrev;
+		}
+		Temp->pPrev = Temp->pPrev->pNext = new Element(Data, Temp, Temp->pPrev);
+		size++;
+	}
 
 	//				Removing Elements:
 	void pop_front()
@@ -167,6 +269,35 @@ public:
 		Tail->pNext = nullptr;
 		size--;
 	}
+	void erase(size_t index)
+	{
+		if (index == 0)
+		{
+			pop_front();
+			return;
+		}
+		if (index == size - 1)
+		{
+			pop_back();
+			return;
+		}
+		if (index >= size)return;
+
+		Element* Temp;
+		if (index < size / 2)
+		{
+			Temp = Head;
+			for (size_t i = 0; i < index; i++)Temp = Temp->pNext;
+		}
+		else
+		{
+			Temp = Tail;
+			for (size_t i = 0; i < size - index - 1; i++)Temp = Temp->pPrev;
+		}
+		Temp->pPrev->pNext = Temp->pNext;
+		Temp->pNext->pPrev = Temp->pPrev;
+		delete Temp;
+	}
 
 	//				Methods:
 	void print()const
@@ -187,7 +318,9 @@ public:
 };
 
 //#define BASE_CHECK
-//#define ITERATORS_CHECK
+#define ITERATORS_CHECK
+//#define RANGEDBASED_FOR
+//#define VECTOR
 
 void main()
 {
@@ -204,10 +337,8 @@ void main()
 	list.print();
 	list.reverse_print();
 #endif // BASE_CHECK
-
 #ifdef ITERATORS_CHECK
 	List list = { 3,5,8,13,21 };
-	list = list;
 	list.print();
 	//List list2 = list;  //CopyConstructor
 	List list2;				//DefaultConstructor
@@ -218,10 +349,18 @@ void main()
 		cout << *it << "\t";
 	}
 	cout << endl;
-	list2.reverse_print();
+	cout << "\n-----------------------------------------------------------------------\n";
+	for (List::ReverseIterator it = list2.rbegin(); it != list.rend(); ++it)
+	{
+		cout << *it << "\t";
+	}
+	cout << endl;
+
+	//list2.reverse_print();
 #endif // ITERATORS_CHECK
+#ifdef RANGEDBASED_FOR
 	typedef int DataType;
-	DataType arr[] = { 0,1,1,2,3,5,8,13,21};
+	DataType arr[] = { 0,1,1,2,3,5,8,13,21 };
 	for (int i = 0; i < sizeof(arr) / sizeof(DataType); i++)
 	{
 		cout << arr[i] << endl;
@@ -244,5 +383,27 @@ void main()
 	{
 		cout << i << "\t";
 	}cout << endl;
+#endif // RANGEDBASED_FOR
 
+#ifdef VECTOR
+	vector<int> myVector = { 0,484,387,999 };
+	myVector.push_back(2);
+	myVector.push_back(44);
+	myVector.push_back(77);
+	myVector.push_back(9);
+
+	cout << "кол-во элементов в векторе:\t" << myVector.size() << endl;
+	//cout << myVector.at(1) << endl;
+	cout << "capacity of vector:\t" << myVector.capacity() << endl;
+
+	for (int i = 0; i < myVector.size(); i++)
+	{
+		cout << myVector[i] << endl;
+	}
+	myVector.clear();
+	cout << "кол-во элементов в векторе:\t" << myVector.size() << endl;
+#endif // VECTOR
+
+
+	
 }
